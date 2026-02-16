@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: pulsequeue
+      POSTGRES_USER: pq
+      POSTGRES_PASSWORD: pqpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pq -d pulsequeue"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgres://pq:pqpass@postgres:5432/pulsequeue?sslmode=disable
+      PORT: "8080"
+      LOG_LEVEL: debug
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://pq:pqpass@postgres:5432/pulsequeue?sslmode=disable
+      LOG_LEVEL: debug
+      POLL_INTERVAL: "5s"
+      WORKER_ID: worker-1
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
