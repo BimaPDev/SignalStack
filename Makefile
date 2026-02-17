@@ -34,3 +34,12 @@ lint:
 test:
 	cd api && go test ./...
 	cd worker && go test ./...
+
+postgress: 
+	docker run -d \
+	  --name signalstack-db \
+	  -e POSTGRES_USER=signalstack \
+	  -e POSTGRES_PASSWORD=signalstack \
+	  -e POSTGRES_DB=signalstack \
+	  -p 5432:5432 \
+	  postgres:17
