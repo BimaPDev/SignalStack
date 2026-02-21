@@ -1,8 +1,19 @@
 package http
 
+import (
+	"log/slog"
+
+	"github.com/BimaPDev/SignalStack/api/internal/repo"
+)
+
 // type EventsHandler struct
 // - Repo *repo.EventsRepo
 // - Log  *slog.Logger
+
+type EventHandler struct {
+	repo *repo.EventRepo
+	Log  *slog.Logger
+}
 
 // func (h *EventsHandler) Create(w http.ResponseWriter, r *http.Request)
 // - decode CreateEventRequest from JSON body

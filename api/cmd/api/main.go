@@ -25,7 +25,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
-	
+
 	router := internalhttp.HandlerRouter()
 	http.ListenAndServe(":3000", router)
 

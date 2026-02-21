@@ -24,14 +24,18 @@ import (
 // func handleHealth(w http.ResponseWriter, r *http.Request)
 // - respond 200 with {"status":"ok"}
 
-func HandlerRouter()  http.Handler {
+func HandlerRouter() http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Get("/health", handleHealth)
+	r.Post("/events", handleEvent)
 	return r
 }
 
-func handleHealth(w http.ResponseWriter, r *http.Request){
+func handleHealth(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"status":"ok"}`))
 }
 
+func handleEvent(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(`{"event":"created"}`))
+}

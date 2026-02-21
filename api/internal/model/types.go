@@ -1,5 +1,10 @@
 package model
 
+import (
+	"encoding/json"
+	"time"
+)
+
 // --- Entities (mirror DB tables) ---
 
 // type User struct
@@ -47,22 +52,35 @@ package model
 
 // --- Request/Response DTOs ---
 
-// type CreateEventRequest struct
-// - Type        string
-// - PayloadJSON json.RawMessage
+type CreateEventRequest struct {
+	Type        string          `json:"type"`
+	PayloadJSON json.RawMessage `json:"payload_json"`
+}
 
-// type CreateEventResponse struct
-// - ID        string
-// - CreatedAt time.Time
+type CreateEventResponse struct {
+	ID        string    `json:"id"`
+	CreatedAT time.Time `json:"created_at"`
+}
 
 // type CreateJobRequest struct
 // - Type           string
 // - IdempotencyKey *string
 
+type CreateJobRequest struct {
+	Type           string  `json:"type"`
+	IdempotencyKey *string `json:"idempotency_key"`
+}
+
 // type CreateJobResponse struct
 // - ID        string
 // - Status    string
 // - CreatedAt time.Time
+
+type CreateJobResponse struct {
+	ID        string    `json:"id"`
+	Status    string    `json:"status"`
+	CreatedAT time.Time `json:"created_at"`
+}
 
 // type ListJobsResponse struct
 // - Jobs []Job
