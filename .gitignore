@@ -1,0 +1,31 @@
+# Secrets — never commit credentials
+.env
+.env.*
+!.env.example
+
+# Go build output
+api/bin/
+worker/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go module cache
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker volumes (if Postgres data is ever mounted locally)
+pgdata/

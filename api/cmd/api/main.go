@@ -19,7 +19,7 @@ import (
 // - listen for SIGINT/SIGTERM signals
 // - on signal: graceful shutdown with timeout context
 func main() {
-	godotenv.Load()
+	godotenv.Load("../.env")
 	db, err := repo.Open(os.Getenv("POSTGRES_ADDR"))
 	if err != nil {
 		log.Fatal(err)

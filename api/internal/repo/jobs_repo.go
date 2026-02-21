@@ -33,8 +33,15 @@ func (r *JobsRepo) Insert(ctx context.Context, userID string, req model.CreateJo
 	).Scan(&res.ID, &res.Status, &res.CreatedAT)
 	if err == sql.ErrNoRows {
 		err := r.DB.QueryRowContext(ctx, `
-			
-		`
+			RETURNING id, status, created_at
+			FROM jobs
+			WHERE user_id = $1 AND idempotency_key = $2
+		`,
+			userID, req.IdempotencyKey,
+		).Scan(&res.ID, &res.Status, &res.CreatedAT)
+		if err != nil {
+			return nil, err
+		}
 	} else if err != nil {
 		return nil, err
 	}

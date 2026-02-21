@@ -1,19 +1,15 @@
 .PHONY: dev-up dev-down migrate-up run-api run-worker build-api build-worker lint test
 
 dev-up:
-	docker compose up -d postgres
-	@echo "Waiting for Postgres…"
-	@sleep 2
+	docker compose up -d --wait postgres
 	$(MAKE) migrate-up
 
 dev-down:
 	docker compose down -v
 
 migrate-up:
-	@for f in db/migrations/*.sql; do \
-		echo "Applying $$f …"; \
-		PGPASSWORD=pqpass psql -h localhost -U pq -d pulsequeue -f "$$f"; \
-	done
+	docker compose exec postgres psql -U pq -d pulsequeue -f /docker-entrypoint-initdb.d/001_init.sql
+	docker compose exec postgres psql -U pq -d pulsequeue -f /docker-entrypoint-initdb.d/002_indexes.sql
 
 run-api:
 	cd api && go run ./cmd/api
