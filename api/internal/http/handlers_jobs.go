@@ -1,16 +1,42 @@
 package http
 
-// type JobsHandler struct
-// - Repo *repo.JobsRepo
-// - Log  *slog.Logger
+import (
+	"encoding/json"
+	"log/slog"
+	"net/http"
 
-// func (h *JobsHandler) Create(w http.ResponseWriter, r *http.Request)
-// - decode CreateJobRequest from JSON body
-// - authenticate request, extract user_id from API key
-// - validate type is non-empty
-// - call h.Repo.Insert(ctx, userID, req)
-// - return 201 with CreateJobResponse as JSON
-// - handle idempotency_key conflict (return existing job)
+	"github.com/BimaPDev/SignalStack/api/internal/model"
+	"github.com/BimaPDev/SignalStack/api/internal/repo"
+)
+type JobsHandler struct {
+	Repo *repo.JobsRepo
+	Log *slog.Logger
+}
+func (h *JobsHandler) Create(w http.ResponseWriter, r *http.Request) {
+	var req model.CreateJobRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, `{"error":"invalid request body"}`, http.StatusBadRequest)
+		return
+	}
+	if req.Type == "" {
+		http.Error(w, `{"error":"req.Type not found"}`, http.StatusBadRequest)
+		return
+	}
+	userID, ok := r.Context().Value(userIDKey).(string)
+	if !ok {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+	res, err := h.Repo.Insert(r.Context(), userID, req)
+	if err != nil {
+		h.Log.Error("insert failed", "err", err)
+		http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(res)
+}
 
 // func (h *JobsHandler) List(w http.ResponseWriter, r *http.Request)
 // - authenticate request, extract user_id
