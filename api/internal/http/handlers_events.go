@@ -32,7 +32,12 @@ func (h *EventHandler) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"req.Type not found"}`, http.StatusBadRequest)
 		return
 	}
-	res, err := h.repo.Insert(r.Context(), "00000000-0000-0000-0000-000000000000", req)
+	userID, ok := r.Context().Value(userIDKey).(string)
+	if !ok {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+	res, err := h.repo.Insert(r.Context(), userID, req)
 	if err != nil {
 		h.Log.Error("insert failed", "err", err)
 		http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)

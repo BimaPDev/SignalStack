@@ -34,6 +34,10 @@ func NewRouter(db *sql.DB, log *slog.Logger) http.Handler {
 	EV := &EventHandler{repo: &repo.EventRepo{DB: db},
 		Log: log}
 	r.Post("/events", EV.Create)
+	r.Group(func(r chi.Router) {
+		r.Use(AuthMiddleware(db))
+		r.Post("/events", EV.Create)
+	})
 	return r
 }
 
