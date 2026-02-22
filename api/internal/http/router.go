@@ -1,10 +1,12 @@
 package http
 
 import (
+	"database/sql"
+	"log/slog"
 	"net/http"
 
+	"github.com/BimaPDev/SignalStack/api/internal/repo"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 )
 
 // func NewRouter(db *sql.DB, log *slog.Logger) http.Handler
@@ -24,18 +26,17 @@ import (
 // func handleHealth(w http.ResponseWriter, r *http.Request)
 // - respond 200 with {"status":"ok"}
 
-func HandlerRouter() http.Handler {
+func NewRouter(db *sql.DB, log *slog.Logger) http.Handler {
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
+	r.Use(RequestIDMiddleware)
+	r.Use(LoggingMiddleware(log))
 	r.Get("/health", handleHealth)
-	r.Post("/events", handleEvent)
+	EV := &EventHandler{repo: &repo.EventRepo{DB: db},
+		Log: log}
+	r.Post("/events", EV.Create)
 	return r
 }
 
 func handleHealth(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"status":"ok"}`))
-}
-
-func handleEvent(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(`{"event":"created"}`))
 }

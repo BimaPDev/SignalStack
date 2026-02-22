@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -26,7 +27,11 @@ func main() {
 	}
 	defer db.Close()
 
-	router := internalhttp.HandlerRouter()
-	http.ListenAndServe(":3000", router)
+	router := internalhttp.NewRouter(db, slog.Default())
+	addr := ":3000"
+	slog.Default().Info("server starting", "addr", addr)
+	if err := http.ListenAndServe(addr, router); err != nil {
+		log.Fatal(err)
+	}
 
 }
