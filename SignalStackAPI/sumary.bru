@@ -1,0 +1,21 @@
+meta {
+  name: sumary
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:3000/summary?from=2026-01-01&to=2026-02-01
+  body: json
+  auth: none
+}
+
+params:query {
+  from: 2026-01-01
+  to: 2026-02-01
+}
+
+headers {
+  Content-Type: application/json
+  X-API-Key: test-token
+}

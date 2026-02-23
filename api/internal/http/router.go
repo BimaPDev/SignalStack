@@ -33,10 +33,11 @@ func NewRouter(db *sql.DB, log *slog.Logger) http.Handler {
 	r.Get("/health", handleHealth)
 	EV := &EventHandler{repo: &repo.EventRepo{DB: db},
 		Log: log}
-	r.Post("/events", EV.Create)
+	EA := &AnalyticsHandler{Repo: &repo.AnalyticsRepo{DB: db}, Log: log}
 	r.Group(func(r chi.Router) {
 		r.Use(AuthMiddleware(db))
 		r.Post("/events", EV.Create)
+		r.Get("/summary", EA.Summary)
 	})
 	return r
 }

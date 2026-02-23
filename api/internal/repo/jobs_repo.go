@@ -15,11 +15,6 @@ func NewJobsRepo(db *sql.DB) *JobsRepo {
 	return &JobsRepo{DB: db}
 }
 
-// func (r *JobsRepo) Insert(ctx context.Context, userID string, req model.CreateJobRequest) (*model.CreateJobResponse, error)
-// - INSERT INTO jobs (user_id, type, idempotency_key) VALUES (...)
-// - handle ON CONFLICT for idempotency_key
-// - RETURNING id, status, created_at
-
 func (r *JobsRepo) Insert(ctx context.Context, userID string, req model.CreateJobRequest) (*model.CreateJobResponse, error) {
 	var res model.CreateJobResponse
 	err := r.DB.QueryRowContext(ctx, `
@@ -48,10 +43,41 @@ func (r *JobsRepo) Insert(ctx context.Context, userID string, req model.CreateJo
 	return &res, nil
 }
 
-// func (r *JobsRepo) List(ctx context.Context, userID string) (*model.ListJobsResponse, error)
-// - SELECT * FROM jobs WHERE user_id = $1
-// - support optional status filter and pagination
+func (r *JobsRepo) List(ctx context.Context, userID string, status string, limit int, offset int) (*model.ListJobsResponse, error) {
+	rows, err := r.DB.QueryContext(ctx, `
+		SELECT id, user_id, type, status, run_at, attempts, max_attempts,
+       	idempotency_key, locked_at, locked_by, last_error, created_at, updated_at
+		FROM jobs
+		WHERE user_id = $1
+		AND ($2 = '' OR status = $2)
+		LIMIT $3 OFFSET $4
+	`, userID, status, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-// func (r *JobsRepo) GetByID(ctx context.Context, userID string, id string) (*model.Job, error)
-// - SELECT * FROM jobs WHERE id = $1 AND user_id = $2
-// - return Job or sql.ErrNoRows
+	var jobs []model.Job
+	for rows.Next() {
+		var job model.Job
+		if err := rows.Scan(&job.ID, &job.UserID, &job.Type, &job.Status, &job.RunAt, &job.Attempts, &job.MaxAttempts, &job.IdempotencyKey, &job.LockedAt, &job.LockedBy, &job.LastError, &job.CreatedAt, &job.UpdatedAt); err != nil {
+			return nil, err
+		}
+		jobs = append(jobs, job)
+	}
+	return &model.ListJobsResponse{Jobs: jobs}, nil
+
+}
+func (r *JobsRepo) GetByID(ctx context.Context, userID string, id string) (*model.Job, error) {
+	var job model.Job
+	err := r.DB.QueryRowContext(ctx, `
+		SELECT id, user_id, type, status, run_at, attempts, max_attempts,
+       	idempotency_key, locked_at, locked_by, last_error, created_at, updated_at
+		FROM jobs
+		WHERE id = $1 AND user_id = $2`, id, userID).Scan(&job.ID, &job.UserID, &job.Type, &job.Status, &job.RunAt, &job.Attempts, &job.MaxAttempts, &job.IdempotencyKey, &job.LockedAt, &job.LockedBy, &job.LastError, &job.CreatedAt, &job.UpdatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+	return &job, nil
+}
