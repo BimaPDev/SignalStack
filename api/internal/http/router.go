@@ -34,10 +34,15 @@ func NewRouter(db *sql.DB, log *slog.Logger) http.Handler {
 	EV := &EventHandler{repo: &repo.EventRepo{DB: db},
 		Log: log}
 	EA := &AnalyticsHandler{Repo: &repo.AnalyticsRepo{DB: db}, Log: log}
+	EJ := &JobsHandler{Repo: &repo.JobsRepo{DB: db}, Log:log}
 	r.Group(func(r chi.Router) {
 		r.Use(AuthMiddleware(db))
 		r.Post("/events", EV.Create)
-		r.Get("/summary", EA.Summary)
+		r.Get("/analytics/summary", EA.Summary)
+		r.Post("/jobs", EJ.Create)
+		r.Get("/jobs", EJ.List)
+		r.Get("/jobs/{id}", EJ.GetByID)
+		r.Get("/analytics/timeseries", EA.Timeseries)
 	})
 	return r
 }
