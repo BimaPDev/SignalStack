@@ -8,6 +8,7 @@ import (
 
 	"github.com/BimaPDev/SignalStack/api/internal/model"
 	"github.com/BimaPDev/SignalStack/api/internal/repo"
+	"github.com/go-chi/chi/v5"
 )
 
 type JobsHandler struct {
@@ -89,7 +90,7 @@ func (h *JobsHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
 		return
 	}
-	read_id := r.PathValue("id")
+	read_id := chi.URLParam(r, "id")
 	res, err := h.Repo.GetByID(r.Context(), userID, read_id)
 	if err != nil {
 		h.Log.Error("Fetch Fail", "err", err)
