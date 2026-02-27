@@ -2,10 +2,8 @@ package main
 
 import (
 	"log"
-	"os"
 
-	"github.com/BimaPDev/SignalStack/api/internal/repo"
-	"github.com/joho/godotenv"
+	"github.com/BimaPDev/SignalStack/worker/internal/config"
 )
 
 // func main
@@ -18,14 +16,9 @@ import (
 // - listen for SIGINT/SIGTERM, cancel context on signal
 // - call loop.Run(ctx) — blocks until context cancelled
 
-
 func main() {
-	godotenv.Load("../.env")
-	db, err := repo.Open(os.Getenv("POSTGRES_ADDR"))
+	cfg, err := config.Load()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
-
-	
 }

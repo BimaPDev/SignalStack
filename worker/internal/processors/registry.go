@@ -1,33 +1,31 @@
 package processors
 
-import "context"
-
-// type Processor interface
-// - Process(ctx context.Context, jobID, userID string) (output []byte, err error)
+import (
+	"context"
+	"fmt"
+)
 
 type Processor interface {
 	Processor(ctx context.Context, jobID, userID string) (output []byte, err error)
 }
 
-// type Registry struct
-// - m map[string]Processor
-
 type Registry struct {
 	m map[string]Processor
 }
 
-// func NewRegistry() *Registry
-// - return Registry with empty map
-
 func NewRegistry() *Registry {
-	return &Registry {
-		
+	return &Registry{
+		m: make(map[string]Processor),
 	}
 }
+func (r *Registry) Register(jobType string, p Processor) {
+	r.m[jobType] = p
+}
 
-// func (r *Registry) Register(jobType string, p Processor)
-// - add processor to map keyed by job type
-
-// func (r *Registry) Get(jobType string) (Processor, error)
-// - look up processor by job type
-// - return error if not found
+func (r *Registry) Get(jobType string) (Processor, error) {
+	value, ok := r.m[jobType]
+	if !ok {
+		return nil, fmt.Errorf("processor not found for job type: %s", jobType)
+	}
+	return value, nil
+}
