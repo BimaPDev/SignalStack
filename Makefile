@@ -1,8 +1,11 @@
-.PHONY: dev-up dev-down migrate-up run-api run-worker build-api build-worker lint test
+.PHONY: dev-up dev-down db-start migrate-up run-api run-worker build-api build-worker lint test
 
 dev-up:
 	docker compose up -d --wait postgres
 	$(MAKE) migrate-up
+
+db-start:
+	docker compose start postgres
 
 dev-down:
 	docker compose down -v
